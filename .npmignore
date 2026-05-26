@@ -1,0 +1,11 @@
+src
+tsconfig.json
+.gitignore
+node_modules
+*.log
+.DS_Store
+.env
+.env.*
+coverage
+.idea
+.vscode
