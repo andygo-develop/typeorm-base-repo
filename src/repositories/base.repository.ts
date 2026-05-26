@@ -725,6 +725,10 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
 
     return entities;
   }
+
+  protected params2suffix(params: any) {
+    return Buffer.from(JSON.stringify(params), 'utf8').toString('base64');
+  }
 }
 
 /**
