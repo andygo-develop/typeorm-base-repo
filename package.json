@@ -1,6 +1,6 @@
 {
   "name": "@andygo.dev/typeorm-base-repo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Enhanced TypeORM repository base class with scoping, response caching, keyset pagination, and many-to-many helpers.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
