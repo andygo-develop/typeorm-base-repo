@@ -58,7 +58,7 @@ Then run these checks:
 
 1. **Up to date** — confirm `origin/<source-branch>` and the local tracking ref (if any) agree. If the remote is ahead of local, note it but do not pull.
 
-2. **Conflicts** — verify the source branch can be merged into `main` (requires git ≥ 2.38):
+2. **Conflicts** — verify the source branch can be merged into `main`:
 
    ```bash
    git merge-tree origin/main origin/<source-branch>
@@ -126,23 +126,14 @@ Do **not** apply the bump to the source branch's current version. If a previous 
 
 Goal: the tip of `origin/<source-branch>` is a single commit whose only change vs its parent is `"version": "<target>"` in `package.json` (and `package-lock.json` if present). The skill may freely overwrite the tip commit as long as that tip is a "version-only" commit (its diff against its parent touches only `package.json`/`package-lock.json` and only the `version` field).
 
-Read the source branch's current version and check whether the tip is version-only:
-
-```bash
-git show origin/<source-branch>:package.json | grep '"version"'
-git diff origin/<source-branch>~1 origin/<source-branch> -- package.json package-lock.json
-```
-
-A tip commit is **version-only** if its diff touches only `package.json` and/or `package-lock.json`, and within those files only the `"version"` field changes.
-
-If `source.version === target.version` and the tip is version-only, do nothing — the desired state already holds.
+If `source.version === target.version`, do nothing — the desired state already holds.
 
 Otherwise:
 
 ```bash
 SOURCE_TIP=$(git rev-parse origin/<source-branch>)
 WORKTREE=$(mktemp -d -t release-XXXXXX)
-git worktree add --detach "$WORKTREE" "$SOURCE_TIP" || { rm -rf "$WORKTREE"; echo "git worktree add failed"; exit 1; }
+git worktree add --detach "$WORKTREE" "$SOURCE_TIP"
 ```
 
 If the tip commit is version-only, drop it so we replace rather than stack:
@@ -156,26 +147,25 @@ If the tip commit is version-only, drop it so we replace rather than stack:
 Set the exact target version (not a relative bump), commit, and push:
 
 ```bash
+(cd "$WORKTREE" && npm version <target-version> --no-git-tag-version --allow-same-version)
 (cd "$WORKTREE" \
-  && npm version <target-version> --no-git-tag-version \
   && git add package.json package-lock.json \
   && git commit -m "chore: bump version to <target-version>" \
-  && git push --force-with-lease="refs/remotes/origin/<source-branch>:$SOURCE_TIP" \
+  && git push --force-with-lease="<source-branch>:$SOURCE_TIP" \
        origin "HEAD:refs/heads/<source-branch>")
 ```
 
 Then clean up:
 
 ```bash
-git worktree remove --force "$WORKTREE"
+git worktree remove "$WORKTREE"
 git fetch origin <source-branch>
 ```
 
 Notes:
 
-- `--force-with-lease=refs/remotes/origin/<source-branch>:$SOURCE_TIP` checks the remote-tracking ref unambiguously. Concurrent pushes are rejected — stop and report. Never escalate to plain `--force`.
-- `npm version <target> --no-git-tag-version` writes the exact target version. **Never** invoke `npm run bump:<level>`, `npm version <level>`, or `npm run deploy*` here — those bump relatively (breaking idempotency) or publish (which is the user's call). If `npm` is unavailable, edit `package.json` (and `package-lock.json` if present) directly.
-- `git worktree remove --force` ensures cleanup even if the working tree is dirty (e.g. when `git commit` failed after `npm version` wrote files).
+- `--force-with-lease=<source-branch>:$SOURCE_TIP` only allows the push if the remote tip still matches what we observed. Concurrent pushes are rejected — stop and report. Never escalate to plain `--force`.
+- `npm version <target> --no-git-tag-version --allow-same-version` writes the exact target version. **Never** invoke `npm run bump:<level>`, `npm version <level>`, or `npm run deploy*` here — those bump relatively (breaking idempotency) or publish (which is the user's call). If `npm` is unavailable, edit `package.json` (and `package-lock.json` if present) directly.
 
 ### Step 7: Create or Update the Release PR
 
