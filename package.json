@@ -1,6 +1,6 @@
 {
   "name": "@andygo.dev/typeorm-base-repo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enhanced TypeORM repository base class with scoping, response caching, keyset pagination, and many-to-many helpers.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,11 +21,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "prepublishOnly": "npm run clean && npm run build",
-    "preversion": "npm run lint && npm test && npm run build",
-    "postversion": "git push --follow-tags && npm publish --access public",
-    "deploy": "npm version patch",
-    "deploy:minor": "npm version minor",
-    "deploy:major": "npm version major"
+    "publish": "npm publish --access public",
+    "bump:patch": "npm version patch --no-git-tag-version",
+    "bump:minor": "npm version minor --no-git-tag-version",
+    "bump:major": "npm version major --no-git-tag-version"
   },
   "keywords": [
     "typeorm",
