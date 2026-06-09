@@ -1,6 +1,6 @@
 {
   "name": "@andygo.dev/typeorm-base-repo",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Enhanced TypeORM repository base class with scoping, response caching, keyset pagination, and many-to-many helpers.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "prepublishOnly": "npm run clean && npm run build",
-    "publish": "[ \"$(git rev-parse --abbrev-ref HEAD)\" = \"main\" ] || { echo 'Error: not on main branch'; exit 1; } && [ -z \"$(git status --porcelain)\" ] || { echo 'Error: uncommitted changes'; exit 1; } && [ -z \"$(git log @{u}..HEAD --oneline)\" ] || { echo 'Error: unpushed commits'; exit 1; } && [ -z \"$(git log HEAD..@{u} --oneline)\" ] || { echo 'Error: local main is behind origin/main'; exit 1; } && npm publish --access public",
+    "release": "[ \"$(git rev-parse --abbrev-ref HEAD)\" = \"main\" ] || { echo 'Error: not on main branch'; exit 1; } && [ -z \"$(git status --porcelain)\" ] || { echo 'Error: uncommitted changes'; exit 1; } && [ -z \"$(git log @{u}..HEAD --oneline)\" ] || { echo 'Error: unpushed commits'; exit 1; } && [ -z \"$(git log HEAD..@{u} --oneline)\" ] || { echo 'Error: local main is behind origin/main'; exit 1; } && npm publish --access public",
     "bump:patch": "npm version patch --no-git-tag-version",
     "bump:minor": "npm version minor --no-git-tag-version",
     "bump:major": "npm version major --no-git-tag-version"
