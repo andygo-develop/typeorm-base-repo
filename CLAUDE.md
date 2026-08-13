@@ -24,12 +24,15 @@ Run a single test by name:
 npx jest -t "soft delete scopes"
 ```
 
-Publish (runs lint + test + build automatically via `preversion`):
+Release workflow:
 ```bash
-npm run deploy          # patch bump
-npm run deploy:minor
-npm run deploy:major
+npm run bump:patch      # bump version (no tag/commit)
+npm run bump:minor
+npm run bump:major
+npm run publish         # publish to npm (runs clean + build via prepublishOnly)
 ```
+
+Or use `npm version patch/minor/major` directly — `preversion` runs lint + test + build, `postversion` pushes tags and publishes.
 
 ## Architecture
 
