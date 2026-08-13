@@ -35,6 +35,14 @@
     "cache",
     "keyset-pagination"
   ],
+  "homepage": "https://github.com/andygo-develop/emitter#readme",
+  "bugs": {
+    "url": "https://github.com/andygo-develop/emitter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andygo-develop/emitter.git"
+  },
   "author": "Andy Kramar <andygo.develop@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
