@@ -34,6 +34,14 @@
     "cache",
     "keyset-pagination"
   ],
+  "homepage": "https://github.com/andygo-develop/typeorm-base-repo#readme",
+  "bugs": {
+    "url": "https://github.com/andygo-develop/typeorm-base-repo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andygo-develop/typeorm-base-repo.git"
+  },
   "author": "Andy Kramar <andygo.develop@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
