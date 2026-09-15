@@ -67,6 +67,17 @@ describe('BaseRepository (functional)', () => {
       expect(await userRepo.countBy({ email: 'alice@example.com' })).toBe(1);
     });
 
+    it('count is not skewed by nullable or joined columns', async () => {
+      await seed(dataSource);
+
+      // alice has 2 posts, bob 1, carol 0 — a to-many join duplicates rows, so the
+      // count must be DISTINCT over the primary key rather than over the joined rows.
+      expect(await userRepo.count({ relations: { posts: true } })).toBe(3);
+
+      // deletedAt is NULL on every live row; it must not collapse the count to 0.
+      expect(await userRepo.withArchived.count()).toBe(3);
+    });
+
     it('exists/existsBy returns boolean', async () => {
       await seed(dataSource);
 
