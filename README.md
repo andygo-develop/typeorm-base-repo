@@ -13,7 +13,7 @@ npm install @andygo.dev/typeorm-base-repo
 
 Peer dependencies:
 
-- `typeorm` `^0.3.0`
+- `typeorm` `^1.0.0`
 - `@nestjs/common` `^10 || ^11` (used for `NotFoundException`)
 
 `@nestjs/typeorm` is bundled as a runtime dependency and used by the
@@ -469,6 +469,38 @@ Top-level exports:
   `TRepository`, `TResponseCache`, `TResponseCacheOptions`,
   `TResponseCacheRelations`, `TResponseCacheRelationsProperty`,
   `TEntityKeys`, `TEntityProperties`, `TEntityProperty`, `DeepKeys`.
+
+## Upgrading to 4.0 (TypeORM 1.x)
+
+`4.0.0` requires `typeorm@^1.0.0`. Run TypeORM's own codemod for your
+application code first:
+
+```bash
+npx @typeorm/codemod v1 src/
+```
+
+One method was removed from `BaseRepository`:
+
+- **`loadRelationCountAndMap()`** — TypeORM 1.0 deleted the underlying
+  `SelectQueryBuilder.loadRelationCountAndMap()` and the `@RelationCount`
+  decorator, so the wrapper had nothing left to call. Declare the count as a
+  `@VirtualColumn` and list it in `static extraSelect`, and this package will
+  select it on every `find()` automatically:
+
+```ts
+@Entity()
+export class User extends BaseMethodsEntity {
+  @VirtualColumn({
+    query: (alias) => `SELECT COUNT(*) FROM post WHERE post."userId" = ${alias}.id`,
+  })
+  postsCount: number;
+
+  static extraSelect = { postsCount: true };
+}
+```
+
+Use the `withoutVirtual` scope to skip these columns on queries that don't need
+them.
 
 ## License
 

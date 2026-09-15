@@ -72,7 +72,7 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
   }
 
   get queryResultCache() {
-    return this.manager.connection.queryResultCache;
+    return this.manager.dataSource.queryResultCache;
   }
 
   get properties(): FindOptionsSelect<Entity> {
@@ -122,7 +122,7 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
     const { scope } = this;
     const query = scope.getQuery();
     const params = scope.getParameters();
-    const [escapedQuery] = scope.connection.driver.escapeQueryWithParameters(query, params, {});
+    const [escapedQuery] = scope.dataSource.driver.escapeQueryWithParameters(query, params);
     const diff = (<any>util).diff(query, escapedQuery);
     let pos = 0;
     const paramsPos: number[] = [];
@@ -212,6 +212,12 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
 
   count(options?: TFindOptions<Entity>) {
     const qb = this.prepareFindScope(options);
+
+    // TypeORM >= 1.0 counts with COUNT(DISTINCT(col1 || '|;|' || ... || colN)) whenever findOptions.select
+    // is set. Concatenating a NULL column yields NULL, so a single nullable column (deletedAt, say) makes
+    // every row collapse to NULL and the count come back as 0. The selected columns are irrelevant to a
+    // count, so drop them and let TypeORM use its COUNT(1) / COUNT(DISTINCT(primary key)) path instead.
+    (<any>qb).findOptions = { ...(<any>qb).findOptions, select: undefined };
 
     if (options?.responseCache?.ttl !== undefined) {
       const { id, ttl } = options.responseCache;
@@ -450,20 +456,6 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
     return this.createScoped({ withDeleted: true, where: { deletedAt: <any>Not(IsNull()) } });
   }
 
-  loadRelationCountAndMap(
-    mapToProperty: TEntityKeys<Entity>,
-    relationName: TEntityKeys<Entity>,
-    aliasName?: string,
-    queryBuilderFactory?: (qb: SelectQueryBuilder<Entity>) => SelectQueryBuilder<Entity>,
-  ) {
-    const repo = this.createScoped({});
-    const { alias } = repo.scope;
-
-    repo.scope.loadRelationCountAndMap(`${alias}.${mapToProperty}`, `${alias}.${relationName}`, aliasName, queryBuilderFactory);
-
-    return repo;
-  }
-
   async setManyToManyItems(document: Entity, items: IDbEntity[], relation: TEntityKeys<Entity>): Promise<void> {
     const { joinTableName, joinColumns } = this.metadata.relations.find(({ propertyName }) => propertyName === relation);
     const query = this.createQueryBuilder().delete().from(joinTableName);
@@ -666,7 +658,7 @@ export class BaseRepository<Entity extends IDbEntity> extends Repository<Entity>
 
         const repo = this.getRepository(relationMetadata.type).setFindOptions({ ...relationOptions, relations: undefined });
         const scope = repo.prepareFindScope();
-        const relationIdLoader = new RelationIdLoader(this.manager.connection, this.manager.queryRunner);
+        const relationIdLoader = new RelationIdLoader(this.manager.dataSource, this.manager.queryRunner);
         const cacheId = relationOptions.responseCache?.id ?? `${cacheIdPrefix}#${propertyName}`;
 
         const result = await this.cache(
