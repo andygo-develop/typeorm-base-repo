@@ -1,5 +1,5 @@
 export interface IDbEntity {
   __interfaceName: 'IDbEntity';
-  id?: any;
+  id?: number | string;
   deletedAt?: Date;
 }
