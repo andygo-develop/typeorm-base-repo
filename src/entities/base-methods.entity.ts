@@ -13,7 +13,7 @@ export class BaseMethodsEntity implements IDbEntity {
     return <T>Object.assign(new EntityKlass(), data);
   }
 
-  public id: number;
+  public id: number | string;
 
   public deletedAt?: Date;
 
